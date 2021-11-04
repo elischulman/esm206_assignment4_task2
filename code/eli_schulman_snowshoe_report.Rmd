@@ -5,13 +5,65 @@ date: "11/3/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+***Introduction: ***
 
+***Data and Analysis: *** 
+
+***Data Citation: *** Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(janitor)
+library(lubridate)
+```
 
 
 ```{r}
-test
+bonanza_hares <- read_csv(here("data", "bonanza_hares.csv")) %>% 
+  clean_names()
 ```
+
+### Annual Juvenile Hare Trap Coounts
+
+```{r}
+annual_traps <- bonanza_hares %>% 
+  mutate(date = mdy(date)) %>% 
+  mutate(year = year(date)) %>% 
+  group_by(year) %>% 
+  summarize(hares_trapped = n())
+
+ggplot(annual_traps, aes(x = year, y = hares_trapped)) +
+  geom_bar(stat = "identity", 
+           fill = "burlywood4",
+           width = .5) +
+  scale_x_discrete(limit = c(1998:2012)) +
+  theme_minimal() +
+  labs (title = "Hares Trapped at Bonanza Creek",
+        y = "# of Hares",
+        x = "Year",
+        caption = "Juvenile Snowshoe Hares trapped at the Bonanza Creek Expirimental Forest") +
+  theme(plot.title = element_text(hjust = .5)) 
+
+
+# trap_trends <- annual_traps %>% 
+  
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
