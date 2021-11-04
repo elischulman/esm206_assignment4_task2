@@ -12,7 +12,7 @@ output: html_document
 ***Data Citation: *** Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 library(tidyverse)
 library(here)
@@ -47,14 +47,13 @@ ggplot(annual_traps, aes(x = year, y = hares_trapped)) +
         caption = "Juvenile Snowshoe Hares trapped at the Bonanza Creek Expirimental Forest") +
   theme(plot.title = element_text(hjust = .5)) 
 
-
-# trap_trends <- annual_traps %>% 
-  
+trap_trends <- annual_traps %>%
+  summarize(mean = round(mean(hares_trapped),0),
+            max = max(hares_trapped),
+            min = min(hares_trapped),
+            standard_deviation = sd(hares_trapped))
 ```
-
-
-
-
+Trapped Snowshoes Takeaway: There were, on average, 213 Juvenile Snowshoe Hares trapped each year during the study. However, there was substantial variability in the annual trappings (sd = 138). For example, trappings were lowest in 2002 (38 hares trapped) and peaked in 2009 (410 hares trapped). These swings are evidence of non-standard sampling efforts between years. Moving forward, the scientists should ensure that the traps used for the study remain consistent in frequency and time of year that they are monitored. 
 
 
 
