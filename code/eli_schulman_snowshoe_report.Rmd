@@ -24,6 +24,8 @@ library(lubridate)
 ```{r}
 bonanza_hares <- read_csv(here("data", "bonanza_hares.csv")) %>% 
   clean_names() %>% 
+# filter for just juvenile hares
+  filter(age %in% c("j", "J")) %>% 
   mutate(date = mdy(date)) %>% 
   mutate(year = year(date))
 ```
@@ -32,7 +34,6 @@ bonanza_hares <- read_csv(here("data", "bonanza_hares.csv")) %>%
 
 ```{r}
 hare_traps <- bonanza_hares %>% 
-  filter(age == "j") %>% 
   group_by(year) %>% 
   summarize(hares_trapped = n())
 
@@ -59,9 +60,30 @@ Trapped Snowshoes Takeaway: There is a sampled decline in Juvenile Snowshoe Hare
 ### Hare Weights by Sex and Site
 
 ```{r}
-hare_weight <- bonanza_hares
-```
+hare_weight <- bonanza_hares %>% 
+  select(grid, sex, weight) %>% 
+  mutate(sex = case_when(
+    sex == "f" ~ "Female",
+    sex == "m" ~ "Male",
+    TRUE ~ "NA"
+  ))
 
+
+ggplot(hare_weight, aes(x = weight)) +
+  geom_histogram(aes(fill = sex),
+                 bins = 10,
+                 color = "black",
+                 alpha = .8) +
+  labs(title = "Juvenile Hare Weight Distribution by Site",
+       x = "Weight (g)",
+       y = "# of Hares",
+       fill = "Sex") +
+  theme(plot.title = element_text(hjust = .5))+
+  facet_wrap(~ grid) 
+  
+
+# Then make a table for averages
+```
 
 
 
