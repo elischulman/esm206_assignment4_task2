@@ -23,23 +23,24 @@ library(lubridate)
 
 ```{r}
 bonanza_hares <- read_csv(here("data", "bonanza_hares.csv")) %>% 
-  clean_names()
+  clean_names() %>% 
+  mutate(date = mdy(date)) %>% 
+  mutate(year = year(date))
 ```
 
 ### Annual Juvenile Hare Trap Coounts
 
 ```{r}
-annual_traps <- bonanza_hares %>% 
-  mutate(date = mdy(date)) %>% 
-  mutate(year = year(date)) %>% 
+hare_traps <- bonanza_hares %>% 
+  filter(age == "j") %>% 
   group_by(year) %>% 
   summarize(hares_trapped = n())
 
-ggplot(annual_traps, aes(x = year, y = hares_trapped)) +
+ggplot(hare_traps, aes(x = year, y = hares_trapped)) +
   geom_bar(stat = "identity", 
            fill = "burlywood4",
            width = .5) +
-  scale_x_discrete(limit = c(1998:2012)) +
+  scale_x_discrete(limit = c(1999:2012)) +
   theme_minimal() +
   labs (title = "Hares Trapped at Bonanza Creek",
         y = "# of Hares",
@@ -47,14 +48,19 @@ ggplot(annual_traps, aes(x = year, y = hares_trapped)) +
         caption = "Juvenile Snowshoe Hares trapped at the Bonanza Creek Expirimental Forest") +
   theme(plot.title = element_text(hjust = .5)) 
 
-trap_trends <- annual_traps %>%
+traps_trends <- hare_traps %>%
   summarize(mean = round(mean(hares_trapped),0),
             max = max(hares_trapped),
             min = min(hares_trapped),
             standard_deviation = sd(hares_trapped))
 ```
-Trapped Snowshoes Takeaway: There were, on average, 213 Juvenile Snowshoe Hares trapped each year during the study. However, there was substantial variability in the annual trappings (sd = 138). For example, trappings were lowest in 2002 (38 hares trapped) and peaked in 2009 (410 hares trapped). These swings are evidence of non-standard sampling efforts between years. Moving forward, the scientists should ensure that the traps used for the study remain consistent in frequency and time of year that they are monitored. 
+Trapped Snowshoes Takeaway: There is a sampled decline in Juvenile Snowshoe Hares at the Bonanza Creek between 1999 and 2012. However, there are also gaps in the data where no trapped hares were observed (2002, 2009). This indicates that sampling techniques may have lacked in those years, and more generally, could be waning over time. This would be consistent with the observed decline in hare trappings over the years. That being said, the average count of juvenile hares was 32 per year, with a max count of 126 in 1999. This might reflect a relatively high level of interest in the sampling at the onset of the project. 
 
+### Hare Weights by Sex and Site
+
+```{r}
+hare_weight <- bonanza_hares
+```
 
 
 
