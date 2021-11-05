@@ -11,32 +11,38 @@ output: html_document
 
 ***Data Citation: *** Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14
 
-```{r setup, include=FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 library(tidyverse)
 library(here)
 library(janitor)
 library(lubridate)
+library(kableExtra)
+library(effsize)
 ```
 
 
 ```{r}
+# read in the data
 bonanza_hares <- read_csv(here("data", "bonanza_hares.csv")) %>% 
   clean_names() %>% 
 # filter for just juvenile hares
   filter(age %in% c("j", "J")) %>% 
+# clean date using lubridate
   mutate(date = mdy(date)) %>% 
   mutate(year = year(date))
 ```
 
-### Annual Juvenile Hare Trap Coounts
+### Annual Juvenile Snowshoe Hare Trap Coounts
 
 ```{r}
+# create new df to be used for trap trends
 hare_traps <- bonanza_hares %>% 
   group_by(year) %>% 
   summarize(hares_trapped = n())
 
+# visualize the trap counts by year for all juvenile hares
 ggplot(hare_traps, aes(x = year, y = hares_trapped)) +
   geom_bar(stat = "identity", 
            fill = "burlywood4",
@@ -49,18 +55,19 @@ ggplot(hare_traps, aes(x = year, y = hares_trapped)) +
         caption = "Juvenile Snowshoe Hares trapped at the Bonanza Creek Expirimental Forest") +
   theme(plot.title = element_text(hjust = .5)) 
 
+# generate descriptive stats to include in analysis
 traps_trends <- hare_traps %>%
   summarize(mean = round(mean(hares_trapped),0),
             max = max(hares_trapped),
             min = min(hares_trapped),
             standard_deviation = sd(hares_trapped))
 ```
-Trapped Snowshoes Takeaway: There is a sampled decline in Juvenile Snowshoe Hares at the Bonanza Creek between 1999 and 2012. However, there are also gaps in the data where no trapped hares were observed (2002, 2009). This indicates that sampling techniques may have lacked in those years, and more generally, could be waning over time. This would be consistent with the observed decline in hare trappings over the years. That being said, the average count of juvenile hares was 32 per year, with a max count of 126 in 1999. This might reflect a relatively high level of interest in the sampling at the onset of the project. 
+Trapped Snowshoes Takeaway: There is a observed decline in Juvenile Snowshoe Hares at Bonanza Creek between 1999 and 2012. However, there are also gaps in the data where no trapped hares were observed (2002, 2009). This indicates that sampling techniques may have lacked in those years, and more generally, could be waning over time. This would be consistent with the observed decline in hare trappings over the years, too. That being said, the average count of juvenile Hares in the study was 32 per year, with a max count of 126 in 1999. This might reflect a relatively high level of interest in the sampling at the onset of the project. 
 
-### Hare Weights by Sex and Site
+### Juvenile Snowshoe Hare Weights by Sex and Grid
 
 ```{r}
-# Create simple df with just weight, sex, and grid (site) values for each observation
+# Create simple df to compare weights by sex and grid
 hare_weight <- bonanza_hares %>% 
   select(grid, sex, weight) %>% 
   mutate(sex = case_when(
@@ -70,6 +77,7 @@ hare_weight <- bonanza_hares %>%
   ))
 
 # Summarize averages and min/max of weight by sex and grid
+# these numbers will be used in the figure caption to add context to the visualizations
 weight_avg <- hare_weight %>% 
   group_by(grid, sex) %>% 
   summarize(observations = n(),
@@ -95,41 +103,62 @@ ggplot(hare_weight, aes(x = weight)) +
 
 Fig-2 Caption: Mean Juvenile Snowshoe Hare weights for females at bonbs, bonmat, and bonrip are `r round(weight_avg$mean_weight[1],0)`(g), `r round(weight_avg$mean_weight[4],0)`(g), and `r round(weight_avg$mean_weight[7],0)`(g), respectively. The mean weight for male hares are `r round(weight_avg$mean_weight[2],0)`(g), `r round(weight_avg$mean_weight[5],0)`(g), and `r round(weight_avg$mean_weight[8],0)`(g), respectively. 
 
-### Juvenile Weight Comparison
+### Juvenile Snowshoe Hare Weight Comparisons
 
 #### Create lists of weights for males and females
+
 ```{r}
-# Create a vector for female weights, remove NAs
-hare_weight_f <- hare_weight %>% 
+# Create a vector for female weights, remove NAs (used in t test)
+f_list <- hare_weight %>% 
   filter(sex == "Female", weight != "NA") %>% 
-  select(weight)
+  pull(weight)
 
-f_list <- hare_weight_f$weight
-
-# Create a vector for male weights, remove NAs
-hare_weight_m <- hare_weight %>% 
+# Create a vector for male weights, remove NAs (used in t test)
+m_list <- hare_weight %>% 
   filter(sex == "Male", weight != "NA") %>% 
-  select(weight)
-
-m_list <- hare_weight_m$weight
-
+  pull(weight)
 ```
 
+#### Descriptive Statistics for Weights in grams (male vs female)
+
 ```{r}
-# Exploratory graphs for male and female hare weights
+# generate descriptive statistics table 
+weight_comp <- hare_weight %>% 
+  select(sex, weight) %>% 
+  filter(sex != "NA", weight != "NA") %>% 
+  group_by(sex) %>% 
+  summarize(mean = round(mean(weight), 0),
+            sd = round(sd(weight), 0),
+            n())
+
+# format table using kableExtra package
+kable(weight_comp, 
+      col = c("Sex", "Mean (g)", "Standard Deviation (g)", "Sampel Size"),
+      caption = "Female vs Male Juvenile Snowshoe Hare Weights") %>% 
+kable_styling(full_width = FALSE,
+              position = "float_left")
+```
+
+```{r, include = FALSE}
+# Exploratory graphs for male and female hare weights (do not include in report)
+
+# use hist() to check for normality
 hist(f_list)
 
 hist(m_list)
 
-# Each distribution looks relatively normal
+# run a two-sample t-test on the male and female weights
+weight_t_test <- t.test(f_list, m_list)
+
+# test for the effect size between male and female weights
+cohen.d(f_list, m_list)
 ```
 
-#### Run a t-test for male and female weights
-```{r}
+Descriptive Statistics Analysis: In the given samples, male and female juvenile Snowshoe Hares have mean weights of 946g and 855g, respectively, for a mean difference of 91g.
 
-```
-
-
+Still need in this analysis for c.iii 
+- explanation of cohens d (effect size)
+- explanation of t-test findings 
 
 
 
