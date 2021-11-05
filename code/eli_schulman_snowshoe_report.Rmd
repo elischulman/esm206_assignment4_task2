@@ -68,7 +68,15 @@ hare_weight <- bonanza_hares %>%
     TRUE ~ "NA"
   ))
 
+# Summarize averages and min/max of weight by sex and grid
+weight_avg <- hare_weight %>% 
+  group_by(grid, sex) %>% 
+  summarize(observations = n(),
+            mean_weight = mean(weight, na.rm = TRUE),
+            min_weight = min(weight, na.rm = TRUE),
+            max_weight = max(weight, na.rm = TRUE))
 
+# Create visualization to show spread of weights by sex and grid
 ggplot(hare_weight, aes(x = weight)) +
   geom_histogram(aes(fill = sex),
                  bins = 10,
@@ -77,13 +85,14 @@ ggplot(hare_weight, aes(x = weight)) +
   labs(title = "Juvenile Hare Weight Distribution by Site",
        x = "Weight (g)",
        y = "# of Hares",
-       fill = "Sex") +
-  theme(plot.title = element_text(hjust = .5))+
+       fill = "Sex",
+       caption = "Figure 2") +
+  theme(plot.title = element_text(hjust = .5)) +
+  scale_fill_manual(values = c("deeppink3","dodgerblue","grey")) +
   facet_wrap(~ grid) 
-  
-
-# Then make a table for averages
 ```
+
+Fig-2 Caption: Mean Juvenile Snowshoe Hare weights for females at bonbs, bonmat, and bonrip are `r round(weight_avg$mean_weight[1],0)`(g), `r round(weight_avg$mean_weight[4],0)`(g), and `r round(weight_avg$mean_weight[7],0)`(g), respectively. The mean weight for male hares are `r round(weight_avg$mean_weight[2],0)`(g), `r round(weight_avg$mean_weight[5],0)`(g), and `r round(weight_avg$mean_weight[8],0)`(g), respectively. 
 
 
 
