@@ -60,6 +60,7 @@ Trapped Snowshoes Takeaway: There is a sampled decline in Juvenile Snowshoe Hare
 ### Hare Weights by Sex and Site
 
 ```{r}
+# Create simple df with just weight, sex, and grid (site) values for each observation
 hare_weight <- bonanza_hares %>% 
   select(grid, sex, weight) %>% 
   mutate(sex = case_when(
@@ -94,8 +95,39 @@ ggplot(hare_weight, aes(x = weight)) +
 
 Fig-2 Caption: Mean Juvenile Snowshoe Hare weights for females at bonbs, bonmat, and bonrip are `r round(weight_avg$mean_weight[1],0)`(g), `r round(weight_avg$mean_weight[4],0)`(g), and `r round(weight_avg$mean_weight[7],0)`(g), respectively. The mean weight for male hares are `r round(weight_avg$mean_weight[2],0)`(g), `r round(weight_avg$mean_weight[5],0)`(g), and `r round(weight_avg$mean_weight[8],0)`(g), respectively. 
 
+### Juvenile Weight Comparison
 
+#### Create lists of weights for males and females
+```{r}
+# Create a vector for female weights, remove NAs
+hare_weight_f <- hare_weight %>% 
+  filter(sex == "Female", weight != "NA") %>% 
+  select(weight)
 
+f_list <- hare_weight_f$weight
+
+# Create a vector for male weights, remove NAs
+hare_weight_m <- hare_weight %>% 
+  filter(sex == "Male", weight != "NA") %>% 
+  select(weight)
+
+m_list <- hare_weight_m$weight
+
+```
+
+```{r}
+# Exploratory graphs for male and female hare weights
+hist(f_list)
+
+hist(m_list)
+
+# Each distribution looks relatively normal
+```
+
+#### Run a t-test for male and female weights
+```{r}
+
+```
 
 
 
