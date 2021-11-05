@@ -54,7 +54,9 @@ ggplot(hare_traps, aes(x = year, y = hares_trapped)) +
         x = "Year",
         caption = "Juvenile Snowshoe Hares trapped at the Bonanza Creek Expirimental Forest") +
   theme(plot.title = element_text(hjust = .5)) 
+```
 
+```{r, include = FALSE}
 # generate descriptive stats to include in analysis
 traps_trends <- hare_traps %>%
   summarize(mean = round(mean(hares_trapped),0),
@@ -110,12 +112,14 @@ Fig-2 Caption: Mean Juvenile Snowshoe Hare weights for females at bonbs, bonmat,
 ```{r}
 # Create a vector for female weights, remove NAs (used in t test)
 f_list <- hare_weight %>% 
-  filter(sex == "Female", weight != "NA") %>% 
+  filter(sex == "Female") %>% 
+  drop_na(weight) %>% 
   pull(weight)
 
 # Create a vector for male weights, remove NAs (used in t test)
 m_list <- hare_weight %>% 
-  filter(sex == "Male", weight != "NA") %>% 
+  filter(sex == "Male") %>% 
+  drop_na(weight) %>% 
   pull(weight)
 ```
 
@@ -125,7 +129,7 @@ m_list <- hare_weight %>%
 # generate descriptive statistics table 
 weight_comp <- hare_weight %>% 
   select(sex, weight) %>% 
-  filter(sex != "NA", weight != "NA") %>% 
+  drop_na(sex, weight) %>% 
   group_by(sex) %>% 
   summarize(mean = round(mean(weight), 0),
             sd = round(sd(weight), 0),
@@ -160,6 +164,29 @@ Still need in this analysis for c.iii
 - explanation of cohens d (effect size)
 - explanation of t-test findings 
 
+
+### Juvenile Hare Weight and Hind Foot Length
+
+```{r}
+# create df to compare weight and hind foot
+hare_wt_ft <- bonanza_hares %>% 
+  select(weight, hindft) %>% 
+  drop_na(weight, hindft)
+
+ggplot(hare_wt_ft, aes(x = weight, y = hindft)) +
+  geom_point() +
+  geom_smooth(method = lm) +
+  labs(title = "Juvenile Snowshoe Hare Weight vs Hind Foot Length",
+       x = "Weight (g)",
+       y = "Hind Foot Length (mm)",
+       caption = "For the Hares in the study, we expect that for every 3.13g increase 
+       in hare weight we will observe a 10mm increase in hind foot length") +
+  theme(plot.title = element_text(hjust = .5)) 
+
+hare_lm <- lm(hindft ~ weight, data = hare_wt_ft)
+hare_lm
+
+```
 
 
 
