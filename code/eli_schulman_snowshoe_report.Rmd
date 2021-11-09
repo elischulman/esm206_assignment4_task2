@@ -135,10 +135,9 @@ m_list <- hare_weight %>%
 # generate descriptive statistics table 
 weight_comp <- hare_weight %>% 
   select(sex, weight) %>% 
-  drop_na(sex, weight) %>% 
   group_by(sex) %>% 
-  summarize(mean = round(mean(weight), 0),
-            sd = round(sd(weight), 0),
+  summarize(mean = round(mean(weight, na.rm = TRUE), 0),
+            sd = round(sd(weight, na.rm = TRUE), 0),
             n())
 
 # format table using kableExtra package

@@ -269,10 +269,9 @@ m_list &lt;- hare_weight %&gt;%
 <pre class="r"><code># generate descriptive statistics table 
 weight_comp &lt;- hare_weight %&gt;% 
   select(sex, weight) %&gt;% 
-  drop_na(sex, weight) %&gt;% 
   group_by(sex) %&gt;% 
-  summarize(mean = round(mean(weight), 0),
-            sd = round(sd(weight), 0),
+  summarize(mean = round(mean(weight, na.rm = TRUE), 0),
+            sd = round(sd(weight, na.rm = TRUE), 0),
             n())
 
 # format table using kableExtra package
@@ -312,7 +311,7 @@ Female
 292
 </td>
 <td style="text-align:right;">
-197
+200
 </td>
 </tr>
 <tr>
@@ -340,7 +339,7 @@ NA
 358
 </td>
 <td style="text-align:right;">
-11
+15
 </td>
 </tr>
 </tbody>
